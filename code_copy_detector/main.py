@@ -1,8 +1,11 @@
-import code_copy_detector as ccd
-import os
-from pathlib import Path
+"""
+Detect code copies in source code files
+"""
+
 from rich.console import Console
 import typer
+
+import code_copy_detector as ccd
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
@@ -29,7 +32,7 @@ def compare_files(fname1: str, fname2: str, ngram_length: int = 20):
     tokenlist2 = ccd.get_token_list(fname2)
     ngrams2 = ccd.get_token_ngrams(tokenlist2, ngram_length)
     ngram_dict2 = ccd.make_ngram_dictionary(ngrams2, fname2)
-    shared_ngrams, n_copies, len_dict_1, len_dict_2 = ccd.compare_ngram_dictionaries(
+    _, n_copies, len_dict_1, len_dict_2 = ccd.compare_ngram_dictionaries(
         ngram_dict, ngram_dict2)
     console.print(f"Found {n_copies} copies of code")
     console.print(f"This corresponds to {n_copies/len_dict_1:.2%} of the first file ({fname1})")
