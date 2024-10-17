@@ -19,7 +19,7 @@ def print_info(custom_message : str = ""):
         console.print(f"Custom message: {custom_message}")
 
 @app.command('compare') # Defines a default action
-def run(fname1: str, fname2: str, ngram_length: int = 20):
+def compare_files(fname1: str, fname2: str, ngram_length: int = 20):
     """
     Compares two source codes and searches for similarities
     """
