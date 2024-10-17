@@ -2,3 +2,5 @@ numpy
 pandas
 typer
 rich
+jupyter
+pylint
