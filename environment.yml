@@ -1,0 +1,6 @@
+name: code_copy_detector
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - -e .
