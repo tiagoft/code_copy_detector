@@ -1,10 +1,15 @@
 import tokenize
 from dataclasses import dataclass
 
-def get_token_list(fname):
+def get_token_list(fname, remove_imports = True, remove_comments = True):
     with tokenize.open(fname) as f:
         tokens = tokenize.generate_tokens(f.readline)
-        tokenlist = [token for token in tokens]
+        tokenlist = [token for token in tokens if token.type != tokenize.NL]
+    if remove_imports:
+        tokenlist = [token for token in tokenlist if not token.line.startswith('import')]
+        tokenlist = [token for token in tokenlist if not token.line.startswith('from')]
+    if remove_comments:
+        tokenlist = [token for token in tokenlist if token.type != tokenize.COMMENT]
     return tokenlist
 
 def get_token_ngrams(tokenlist, n):
