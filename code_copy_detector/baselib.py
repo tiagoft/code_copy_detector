@@ -4,7 +4,9 @@ from dataclasses import dataclass
 def get_token_list(fname, remove_imports = True, remove_comments = True):
     with tokenize.open(fname) as f:
         tokens = tokenize.generate_tokens(f.readline)
-        tokenlist = [token for token in tokens if token.type != tokenize.NL]
+        tokenlist = [token for token in tokens]
+        tokenlist = [token for token in tokenlist if token.type != tokenize.NL]
+        tokenlist = [token for token in tokenlist if token.type != tokenize.NEWLINE]
     if remove_imports:
         tokenlist = [token for token in tokenlist if not token.line.startswith('import')]
         tokenlist = [token for token in tokenlist if not token.line.startswith('from')]
