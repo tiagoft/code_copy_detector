@@ -23,11 +23,29 @@ A segunda maneira é instalar diretamente
 
 Para desinstalar, use:
 
-    pip uninstall install code_copy_detector
+    pip uninstall code_copy_detector
 
 ## Uso
 
-Para encontrar todos os comandos implementados, execute:
+### Comparar dois códigos-fonte
+
+    code_copy_detector-cli compare codigo1.py codigo2.py
+
+### Comparar códigos em um diretório
+
+    code_copy_detector-cli comparedir caminho/do/diretorio --threshold=0.8 --ngram-length=10
+
+    * Ajuste o `threshold` para evitar muitas linhas desnecessárias na tela.
+    * Ajuste o `ngram-length` para ajustar o tamanho da janela (entre 10 e 20 parecem ser valores razoáveis)
+
+### Gerar um grafo com a quantidade semelhança de códigos:
+
+    Essa funcionalidade ajuda para visualizar comunidades de compartilhamento de código:
+
+    code_copy_detector-cli comparedir caminho/do/diretorio --threshold=0.8 --ngram-length=10 --output-dot > output.dot
+    dot -Tpdf input.dot -o output.pdf
+
+### Para encontrar todos os comandos implementados, execute:
 
     code_copy_detector-cli --help
 
