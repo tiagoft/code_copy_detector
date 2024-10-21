@@ -41,13 +41,15 @@ def compare_files(fname1: str, fname2: str, ngram_length: int = 20):
     console.print(f"This corresponds to {n_copies/len_dict_2:.2%} of the first file ({fname2})")
 
 @app.command('comparedir')
-def compare_directory(directory : str, ngram_length: int = 20, threshold: float = 0.6):
+def compare_directory(directory : str, ngram_length: int = 20, threshold: float = 0.6, output_dot: bool = False):
     """
     Compares all pairs of files in a directory
     """
     # Get all .py and .ipynb files in the directory
     files = [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.py')]
 
+
+    output_dict = {}
     # Compare all pairs of files
     for fname1, fname2 in combinations(files, 2):
         try:
@@ -67,9 +69,17 @@ def compare_directory(directory : str, ngram_length: int = 20, threshold: float 
         _, n_copies, len_dict_1, len_dict_2 = ccd.compare_ngram_dictionaries(
             ngram_dict, ngram_dict2)
         if n_copies/len_dict_1 > threshold or n_copies/len_dict_2 > threshold:
-            console.print(f"Found {n_copies} copies of code between {fname1} and {fname2}")
-            console.print(f"This corresponds to {n_copies/len_dict_1:.2%} of the first file ({fname1})")
-            console.print(f"This corresponds to {n_copies/len_dict_2:.2%} of the second file ({fname2})")
+            output_dict[(fname1, fname2)] = (n_copies, len_dict_1, len_dict_2)
+
+    if output_dot:
+        str_out = ccd.results_to_dot(output_dict)
+        console.print(str_out)
+    else:
+        for results in output_dict:
+            console.print(f"Found {output_dict[results][0]} copies between {results[0]} and {results[1]}")
+            console.print(f"This corresponds to {output_dict[results][0]/output_dict[results][1]:.2%} of the first file ({results[0]})")
+            console.print(f"This corresponds to {output_dict[results][0]/output_dict[results][2]:.2%} of the second file ({results[1]})")
+
 
 @app.command('jupyter_to_py')
 def convert_jupyter_to_py(directory: str):
