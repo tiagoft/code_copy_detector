@@ -82,15 +82,27 @@ def compare_directory(directory : str, ngram_length: int = 20, threshold: float 
 
 
 @app.command('jupyter_to_py')
-def convert_jupyter_to_py(directory: str):
+def convert_jupyter_to_py(directory: str, recurse_and_rename : bool = False):
     """
     Converts all Jupyter notebooks in directory to Python files
     """
-    files = [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.ipynb')]
+    current_working_directory = os.getcwd()
+    if recurse_and_rename:
+        files = []
+        
+        print(current_working_directory)
+
+        for root, _, filenames in os.walk(current_working_directory):
+            for filename in filenames:
+                if filename.endswith('.ipynb'):
+                    files.append(os.path.join(root, filename))
+    else:
+        files = [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.ipynb')]
+    
+
     for fname in files:
         console.print(f'Converting {fname} to Python')
-        ccd.jupyter_to_py(fname, fname.replace('.ipynb', '.py'))
-
+        ccd.jupyter_to_py(fname, fname.replace(current_working_directory, '').replace('.ipynb', '.py').replace('/', '_').lstrip('_'))
 
 if __name__ == "__main__":
     app()
