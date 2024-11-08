@@ -35,11 +35,15 @@ class NGramData:
     file: str
     ngram: list
 
-def make_ngram_dictionary(ngrams, filename):
+def make_ngram_dictionary(ngrams, filename, stop_ngrams=None):
+    if stop_ngrams is None:
+        stop_ngrams = set()
     ngram_dict = {}
     for ngram in ngrams:
         tokentypes = tuple( [token.type for token in ngram] )
         data = NGramData(file=filename, ngram=ngrams)
+        if tokentypes in stop_ngrams:
+            continue
         if ngram in ngram_dict:
             ngram_dict[tokentypes].append(data)
         else:
