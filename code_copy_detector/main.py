@@ -79,9 +79,8 @@ def compare_directory(directory: str,
     # Get all .py and .ipynb files in the directory
     files = [
         os.path.join(directory, f) for f in os.listdir(directory)
-        if f.endswith('.py')
+        if f.endswith('.py') or f.endswith('.ipynb')
     ]
-
     output_dict = {}
     # Compare all pairs of files
     for fname1, fname2 in combinations(files, 2):
@@ -101,6 +100,11 @@ def compare_directory(directory: str,
         ngram_dict2 = ccd.make_ngram_dictionary(ngrams2, fname2, stop_ngrams=stopngram_dict)
         _, n_copies, len_dict_1, len_dict_2 = ccd.compare_ngram_dictionaries(
             ngram_dict, ngram_dict2)
+        
+        if len_dict_1 == 0 or len_dict_2 == 0:
+            output_dict[(fname1, fname2)] = (n_copies, len_dict_1, len_dict_2)
+            continue
+
         if n_copies / len_dict_1 > threshold or n_copies / len_dict_2 > threshold:
             output_dict[(fname1, fname2)] = (n_copies, len_dict_1, len_dict_2)
 
@@ -109,15 +113,15 @@ def compare_directory(directory: str,
         console.print(str_out)
     else:
         for results in output_dict:
-            console.print(f"Comparing {results[0]} with {output_dict[results][0]} ngrams and {results[1]} with {output_dict[results][1]} ngrams")
+            console.print(f"Comparing {results[0]} with {output_dict[results][1]} ngrams and {results[1]} with {output_dict[results][2]} ngrams")
             console.print(
                 f"Found {output_dict[results][0]} copies between {results[0]} and {results[1]}"
             )
             console.print(
-                f"This corresponds to {output_dict[results][0]/output_dict[results][1]:.2%} of the first file ({results[0]})"
+                f"This corresponds to {output_dict[results][0]/output_dict[results][1] if output_dict[results][1] != 0 else 0:.2%} of the first file ({results[0]})"
             )
             console.print(
-                f"This corresponds to {output_dict[results][0]/output_dict[results][2]:.2%} of the second file ({results[1]})"
+                f"This corresponds to {output_dict[results][0]/output_dict[results][2] if output_dict[results][2] != 0 else 0:.2%} of the second file ({results[1]})"
             )
 
 
