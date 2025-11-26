@@ -1,7 +1,25 @@
 import tokenize
+from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass
 
-def get_token_list(fname, remove_imports = True, remove_comments = True):
+# Type alias for a token list (List of TokenInfo objects)
+TokenList = List[tokenize.TokenInfo]
+
+# Type alias for an n-gram (Tuple of n TokenInfo objects)
+NGram = Tuple[tokenize.TokenInfo, ...]
+
+@dataclass
+class NGramData:
+    file: str
+    ngram: List[NGram]
+
+# Type alias for the token type tuple (keys in the dictionary)
+TokenTypeTuple = Tuple[int, ...]
+
+# Type alias for the final n-gram dictionary
+NGramDict = Dict[TokenTypeTuple, List[NGramData]]
+
+def get_token_list(fname: str, remove_imports: bool = True, remove_comments: bool = True) -> TokenList:
     with tokenize.open(fname) as f:
         tokens = tokenize.generate_tokens(f.readline)
         tokenlist = [token for token in tokens]
@@ -14,28 +32,21 @@ def get_token_list(fname, remove_imports = True, remove_comments = True):
         tokenlist = [token for token in tokenlist if token.type != tokenize.COMMENT]
     return tokenlist
 
-def get_token_ngrams(tokenlist, n):
+def get_token_ngrams(tokenlist: TokenList, n: int) -> List[NGram]:
     ngrams = []
     for i in range(len(tokenlist) - n + 1):
         ngram = tuple(tokenlist[i:i + n])
         ngrams.append(ngram)
     return ngrams
 
-def get_all_token_ngrams(tokenlist, min_n, max_n):
+def get_all_token_ngrams(tokenlist: TokenList, min_n: int, max_n: int) -> List[List[NGram]]:
     all_ngrams = []
     for n in range(min_n, max_n+1):
         ngrams = get_token_ngrams(tokenlist, n)
         all_ngrams.append(ngrams)
     return all_ngrams
 
-
-
-@dataclass
-class NGramData:
-    file: str
-    ngram: list
-
-def make_ngram_dictionary(ngrams, filename, stop_ngrams=None):
+def make_ngram_dictionary(ngrams: List[NGram], filename: str, stop_ngrams: Optional[Set[TokenTypeTuple]] = None) -> NGramDict:
     if stop_ngrams is None:
         stop_ngrams = set()
     ngram_dict = {}
@@ -50,7 +61,7 @@ def make_ngram_dictionary(ngrams, filename, stop_ngrams=None):
             ngram_dict[tokentypes] = [data]
     return ngram_dict
 
-def compare_ngram_dictionaries(dict1, dict2):
+def compare_ngram_dictionaries(dict1: NGramDict, dict2: NGramDict) -> Tuple[Dict[TokenTypeTuple, Tuple[List[NGramData], List[NGramData]]], int, int, int]:
     shared_ngrams = {}
     for ngram in dict1:
         if ngram in dict2:
