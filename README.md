@@ -1,29 +1,44 @@
 # Code Copy Detector
 
-A detector for copied code
+Um detector para código copiado.
 
 Se você vai *desenvolver* deste repositório, vá para o [guia de desenvolvimento](README_DEV.md).
 
 ## Instalando Code Copy Detector:
 
-Lembre-se de seguir essas instruções de dentro do seu ambiente virtual preferido:
+Lembre-se de seguir essas instruções de dentro do seu ambiente virtual preferido. Recomendamos o uso do **`uv`** para gerenciamento de ambientes e pacotes.
 
-    conda create -n code_copy_detector python=3.11
-    conda activate code_copy_detector
+### Configuração do Ambiente
+
+Por favor, prefira o python 3.13 para desenvolvimento e instalação.
+
+* **Linux/macOS:**
+    ```bash
+    uv venv <SEU-NOME-DO-VENV> --python 3.13
+    source <SEU-NOME-DO-VENV>/bin/activate
+    ```
+* **Windows (Prompt de Comando):**
+    ```bash
+    uv venv <SEU-NOME-DO-VENV> --python 3.13
+    <SEU-NOME-DO-VENV>\Scripts\activate
+    ```
+> **Observação:** Substitua `<SEU-NOME-DO-VENV>` pelo nome desejado (ex: `ccd-venv`).
+
+### Instalação
 
 A primeira maneira é clonar o repositório e fazer uma instalação local:
 
     git clone https://github.com/tiagoft/code_copy_detector.git
     cd code_copy_detector
-    pip install .
+    uv pip install .
 
-A segunda maneira é instalar diretamente
+A segunda maneira é instalar diretamente:
 
-    pip install git+https://github.com/tiagoft/code_copy_detector.git
+    uv pip install git+https://github.com/tiagoft/code_copy_detector.git
 
 Para desinstalar, use:
 
-    pip uninstall code_copy_detector
+    uv pip uninstall code_copy_detector
 
 ## Uso
 
