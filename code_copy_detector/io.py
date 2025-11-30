@@ -25,15 +25,15 @@ def results_to_dot(output_dict : dict):
     added_nodes = set()
     for results in output_dict.keys():
         if results[0] not in added_nodes:
-            output_str += f"\"{results[0]}\" \[label=\"{results[0].split('/')[-1]}\"];\n"
+            output_str += rf"\"{results[0]}\" \[label=\"{results[0].split('/')[-1]}\"];\n"
             added_nodes.add(results[0])
         if results[1] not in added_nodes:
-            output_str += f"\"{results[1]}\" \[label=\"{results[1].split('/')[-1]}\"];\n"
+            output_str += rf"\"{results[1]}\" \[label=\"{results[1].split('/')[-1]}\"];\n"
             added_nodes.add(results[1])
 
     for results in output_dict.keys():
-        output_str += f"\"{results[0]}\" -> \"{results[1]}\" \[label=\"{output_dict[results][0]/output_dict[results][1]:.1%}\"];\n"
-        output_str += f"\"{results[1]}\" -> \"{results[0]}\" \[label=\"{output_dict[results][0]/output_dict[results][2]:.1%}\"];\n"
+        output_str += rf"\"{results[0]}\" -> \"{results[1]}\" \[label=\"{output_dict[results][0]/output_dict[results][1]:.1%}\"];\n"
+        output_str += rf"\"{results[1]}\" -> \"{results[0]}\" \[label=\"{output_dict[results][0]/output_dict[results][2]:.1%}\"];\n"
 
     output_str += "}\n"
     return output_str

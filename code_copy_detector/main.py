@@ -79,7 +79,7 @@ def compare_directory(directory: str,
     # Get all .py and .ipynb files in the directory
     files = [
         os.path.join(directory, f) for f in os.listdir(directory)
-        if f.endswith('.py')
+        if f.endswith('.py') and f.endswith('.ipynb')
     ]
 
     output_dict = {}
