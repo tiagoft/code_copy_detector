@@ -1,6 +1,7 @@
 import json
 
-def jupyter_to_py(fname_in : str, fname_out : str):
+
+def jupyter_to_py(fname_in : str, fname_out : str) -> str:
     """Returns a virtual file for the python content of a jupyter notebook"""
     with open(fname_in, 'r', encoding='utf-8') as f:
         nb = json.load(f)
@@ -17,7 +18,7 @@ def jupyter_to_py(fname_in : str, fname_out : str):
 
     return fname_out
 
-def results_to_dot(output_dict : dict):
+def results_to_dot(output_dict : dict) -> str:
     """Writes a string that can be compiled as graphviz .dot file from the results of a comparison"""
     output_str = ""
     output_str += "digraph G {\n"

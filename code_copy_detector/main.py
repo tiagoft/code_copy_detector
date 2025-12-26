@@ -2,19 +2,22 @@
 Detect code copies in source code files
 """
 
-from rich.console import Console
+import os
+from typing import Optional
+
 import typer
+from rich.console import Console
 
 import code_copy_detector as ccd
-import os
-from itertools import combinations
+from code_copy_detector.app import CodeCopyDetectorApp
+
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
 
 
 @app.command('info')
-def print_info(custom_message: str = ""):
+def print_info(custom_message: str = "") -> None:
     """
     Print information about the module
     """
@@ -26,31 +29,25 @@ def print_info(custom_message: str = ""):
 
 
 @app.command('compare')  # Defines a default action
-def compare_files(fname1: str,
-                  fname2: str,
-                  ngram_length: int = 20,
-                  base_file: str = None):
+def compare_files(
+    fname1: str,
+    fname2: str,
+    ngram_length: int = 20,
+    base_file: Optional[str] = None
+) -> None:
     """
     Compares two source codes and searches for similarities
     """
-    if base_file:
-        stoptokens = ccd.get_token_list(base_file)
-        stopngrams = ccd.get_token_ngrams(stoptokens, ngram_length)
-        stopngram_dict = ccd.make_ngram_dictionary(stopngrams, base_file)
-    else:
-        stopngram_dict = None
-    tokenlist = ccd.get_token_list(fname1)
-    ngrams = ccd.get_token_ngrams(tokenlist, ngram_length)
-    ngram_dict = ccd.make_ngram_dictionary(ngrams,
-                                           fname1,
-                                           stop_ngrams=stopngram_dict)
-    tokenlist2 = ccd.get_token_list(fname2)
-    ngrams2 = ccd.get_token_ngrams(tokenlist2, ngram_length)
-    ngram_dict2 = ccd.make_ngram_dictionary(ngrams2,
-                                            fname2,
-                                            stop_ngrams=stopngram_dict)
-    _, n_copies, len_dict_1, len_dict_2 = ccd.compare_ngram_dictionaries(
-        ngram_dict, ngram_dict2)
+    n_copies, len_dict_1, len_dict_2 = CodeCopyDetectorApp.compare_files(fname1, fname2, ngram_length, base_file)
+
+    if not len_dict_1 or not len_dict_2:
+        console.print("Could not compare files")
+        if not len_dict_1:
+            console.print(f"Could not read {fname1}")
+        if not len_dict_2:
+            console.print(f"Could not read {fname2}")
+        return
+
     console.print(f"Found {n_copies} copies of code")
     console.print(
         f"This corresponds to {n_copies/len_dict_1:.2%} of the first file ({fname1})"
@@ -61,48 +58,21 @@ def compare_files(fname1: str,
 
 
 @app.command('comparedir')
-def compare_directory(directory: str,
-                      ngram_length: int = 20,
-                      threshold: float = 0.6,
-                      output_dot: bool = False,
-                      base_file: str = None):
+def compare_directory(
+    directory: str,
+    ngram_length: int = 20,
+    threshold: float = 0.6,
+    output_dot: bool = False,
+    base_file: Optional[str] = None
+) -> None:
     """
     Compares all pairs of files in a directory
     """
-    if base_file is not None:
-        stoptokens = ccd.get_token_list(base_file)
-        stopngrams = ccd.get_token_ngrams(stoptokens, ngram_length)
-        stopngram_dict = ccd.make_ngram_dictionary(stopngrams, base_file)
-    else:
-        stopngram_dict = None
 
-    # Get all .py and .ipynb files in the directory
-    files = [
-        os.path.join(directory, f) for f in os.listdir(directory)
-        if f.endswith('.py')
-    ]
+    output_dict, failed_files = CodeCopyDetectorApp.compare_directory(directory, ngram_length, threshold, base_file)
 
-    output_dict = {}
-    # Compare all pairs of files
-    for fname1, fname2 in combinations(files, 2):
-        try:
-            tokenlist = ccd.get_token_list(fname1)
-        except IndentationError:
-            console.print(f"Could not read {fname1}")
-            continue
-        ngrams = ccd.get_token_ngrams(tokenlist, ngram_length)
-        ngram_dict = ccd.make_ngram_dictionary(ngrams, fname1, stop_ngrams=stopngram_dict)
-        try:
-            tokenlist2 = ccd.get_token_list(fname2)
-        except IndentationError:
-            console.print(f"Could not read {fname2}")
-            continue
-        ngrams2 = ccd.get_token_ngrams(tokenlist2, ngram_length)
-        ngram_dict2 = ccd.make_ngram_dictionary(ngrams2, fname2, stop_ngrams=stopngram_dict)
-        _, n_copies, len_dict_1, len_dict_2 = ccd.compare_ngram_dictionaries(
-            ngram_dict, ngram_dict2)
-        if n_copies / len_dict_1 > threshold or n_copies / len_dict_2 > threshold:
-            output_dict[(fname1, fname2)] = (n_copies, len_dict_1, len_dict_2)
+    for failed_file in failed_files:
+        console.print(f"Could not read {failed_file}")
 
     if output_dot:
         str_out = ccd.results_to_dot(output_dict)
@@ -122,34 +92,15 @@ def compare_directory(directory: str,
 
 
 @app.command('jupyter_to_py')
-def convert_jupyter_to_py(directory: str, recurse_and_rename: bool = False):
+def convert_jupyter_to_py(directory: str, recurse_and_rename: bool = False) -> None: 
     """
     Converts all Jupyter notebooks in directory to Python files
     """
-    current_working_directory = os.getcwd()
-    if recurse_and_rename:
-        files = []
-
-        print(current_working_directory)
-
-        for root, _, filenames in os.walk(current_working_directory):
-            for filename in filenames:
-                if filename.endswith('.ipynb'):
-                    files.append(os.path.join(root, filename))
-    else:
-        files = [
-            os.path.join(directory, f) for f in os.listdir(directory)
-            if f.endswith('.ipynb')
-        ]
+    files = CodeCopyDetectorApp.find_all_jupyter_notebooks(directory, recurse_and_rename)
 
     for fname in files:
         console.print(f'Converting {fname} to Python')
-        ccd.jupyter_to_py(
-            fname,
-            fname.replace(current_working_directory,
-                          '').replace('.ipynb',
-                                      '.py').replace('/', '_').lstrip('_'))
-
+        CodeCopyDetectorApp.jupyter_to_py(fname)
 
 if __name__ == "__main__":
     app()
